@@ -88,24 +88,20 @@ class WXXTypes(weewx.xtypes.XType):
             raise weewx.UnknownType(obs_type)
 
     def calc_windDir(self, key, data, db_manager):
-        # Return the current wind direction if windSpeed is non-zero, otherwise, None
-        if 'windSpeed' not in data or 'windDir' not in data:
-            raise weewx.CannotCalculate
-        if self.force_null and data['windSpeed'] == 0:
-            val = None
-        else:
-            val = data['windDir']
-        return ValueTuple(val, 'degree_compass', 'group_direction')
+        """ Set windDir to None if windSpeed is zero. Otherwise, raise weewx.NoCalculate. """
+        if 'windSpeed' not in data \
+                or not self.force_null\
+                or data['windSpeed']:
+            raise weewx.NoCalculate
+        return ValueTuple(None, 'degree_compass', 'group_direction')
 
     def calc_windGustDir(self, key, data, db_manager):
-        # Return the current gust direction if windGust is non-zero, otherwise, None
-        if 'windGust' not in data or 'windGustDir' not in data:
-            raise weewx.CannotCalculate
-        if self.force_null and data['windGust'] == 0:
-            val = None
-        else:
-            val = data['windGustDir']
-        return ValueTuple(val, 'degree_compass', 'group_direction')
+        """ Set windGustDir to None if windGust is zero. Otherwise, raise weewx.NoCalculate.If"""
+        if 'windGust' not in data \
+                or not self.force_null\
+                or data['windGust']:
+            raise weewx.NoCalculate
+        return ValueTuple(None, 'degree_compass', 'group_direction')
 
     def calc_maxSolarRad(self, key, data, db_manager):
         altitude_m = weewx.units.convert(self.altitude_vt, 'meter')[0]

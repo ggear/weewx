@@ -257,7 +257,6 @@ class Manager(object):
         """Checks whether the observation type exists in the database and whether it has any
         data.
         """
-
         return self.exists(obs_type) \
                and bool(weewx.xtypes.get_aggregate(obs_type, timespan, 'not_null', self)[0])
 
@@ -894,6 +893,12 @@ class DaySummaryManager(Manager):
         DaySummaryManager._create_sync(self)
         self.patch_sums()
 
+    def exists(self, obs_type):
+        """Checks whether the observation type exists in the database."""
+
+        # Check both with the superclass, and my own set of daily summaries
+        return super(DaySummaryManager, self).exists(obs_type) or obs_type in self.daykeys
+
     def close(self):
         self.version = None
         self.daykeys = None
@@ -935,7 +940,7 @@ class DaySummaryManager(Manager):
             day_summaries_schemas = [(e, 'scalar') for e in self.sqlkeys if
                                      e not in ('dateTime', 'usUnits', 'interval')]
             import weewx.wxmanager
-            if type(self) == weewx.wxmanager.WXDaySummaryManager:
+            if type(self) == weewx.wxmanager.WXDaySummaryManager or 'windSpeed' in self.sqlkeys:
                 # For backwards compatibility, include 'wind'
                 day_summaries_schemas += [('wind', 'vector')]
 

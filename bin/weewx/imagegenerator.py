@@ -46,7 +46,7 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
         try:
             self.generic_dict = self.skin_dict['Labels']['Generic']
         except KeyError:
-            self.generic.dict = {}
+            self.generic_dict = {}
         # text_dict contains translated text strings
         self.text_dict = self.skin_dict.get('Texts', {})
         self.image_dict = self.skin_dict['ImageGenerator']
@@ -267,7 +267,12 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                     stop_vec_t[2])  # Unit group
 
             # Convert the data to the requested units
-            new_data_vec_t = self.converter.convert(data_vec_t)
+            if plot_options.get('unit'):
+                # User has specified an override using option 'unit'. Convert to the explicit unit
+                new_data_vec_t = weewx.units.convert(data_vec_t, plot_options['unit'])
+            else:
+                # No override. Convert to whatever the unit group specified.
+                new_data_vec_t = self.converter.convert(data_vec_t)
 
             # Add a unit label. NB: all will get overwritten except the last. Get the label
             # from the configuration dictionary.

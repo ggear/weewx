@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2021 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2021-2022 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -128,7 +128,6 @@ class TestReportEngine(unittest.TestCase):
         # That should change the unit system, as well as make translation texts available.
         self.assertEqual(skin_dict['Units']['Groups']['group_rain'], 'mm')
         self.assertEqual(skin_dict['Units']['Labels']['day'], [" Tag", " Tage"])
-        self.assertEqual(skin_dict['Texts']['Language'], "Deutsch")
 
     def test_report_lang(self):
         """Test adding a lang spec to a specific report"""
@@ -140,7 +139,6 @@ class TestReportEngine(unittest.TestCase):
         # The results should reflect German
         self.assertEqual(skin_dict['Units']['Groups']['group_rain'], 'mm')
         self.assertEqual(skin_dict['Units']['Labels']['day'], [" Tag", " Tage"])
-        self.assertEqual(skin_dict['Texts']['Language'], "Deutsch")
 
     def test_override_lang(self):
         """Test using a language spec in Defaults, as well as overriding a label."""
@@ -192,6 +190,25 @@ class TestReportEngine(unittest.TestCase):
         self.config_dict['StdReport']['SeasonsReport']['SKIN_ROOT'] = 'alt_skins'
         skin_dict = _build_skin_dict(self.config_dict, 'SeasonsReport')
         self.assertEqual(skin_dict['SKIN_ROOT'], 'alt_skins')
+
+    def test_default_log_specs(self):
+        skin_dict = _build_skin_dict(self.config_dict, 'SeasonsReport')
+        self.assertTrue(skin_dict['log_success'])
+
+    def test_override_defaults_log_specs(self):
+        self.config_dict['StdReport']['Defaults']['log_success'] = False
+        skin_dict = _build_skin_dict(self.config_dict, 'SeasonsReport')
+        self.assertFalse(skin_dict['log_success'])
+
+    def test_override_report_log_specs(self):
+        self.config_dict['StdReport']['log_success'] = False
+        skin_dict = _build_skin_dict(self.config_dict, 'SeasonsReport')
+        self.assertFalse(skin_dict['log_success'])
+
+    def test_global_override_log_specs(self):
+        self.config_dict['log_success'] = False
+        skin_dict = _build_skin_dict(self.config_dict, 'SeasonsReport')
+        self.assertFalse(skin_dict['log_success'])
 
 
 if __name__ == '__main__':

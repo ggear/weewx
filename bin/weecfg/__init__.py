@@ -17,6 +17,7 @@ import shutil
 import sys
 import tempfile
 
+import six
 from six.moves import StringIO, input
 
 import configobj
@@ -1456,25 +1457,20 @@ def get_driver_infos(driver_pkg_name='weewx.drivers', excludes=['__init__.py']):
             # A valid driver will define the attribute "DRIVER_NAME"
             if hasattr(driver_module, 'DRIVER_NAME'):
                 # A driver might define the attribute DRIVER_VERSION
-                driver_module_version = driver_module.DRIVER_VERSION \
-                    if hasattr(driver_module, 'DRIVER_VERSION') else '?'
+                driver_module_version = getattr(driver_module, 'DRIVER_VERSION', '?')
                 # Create an entry for it, keyed by the driver module name
                 driver_info_dict[driver_module_name] = {
                     'module_name': driver_module_name,
                     'driver_name': driver_module.DRIVER_NAME,
                     'version': driver_module_version,
                     'status': ''}
-        except ImportError as e:
+        except (SyntaxError, ImportError) as e:
             # If the import fails, report it in the status
             driver_info_dict[driver_module_name] = {
                 'module_name': driver_module_name,
                 'driver_name': '?',
                 'version': '?',
                 'status': e}
-        except Exception as e:
-            # Ignore anything else.  This might be a python file that is not
-            # a driver, a python file with errors, or who knows what.
-            pass
 
     return driver_info_dict
 
@@ -1717,7 +1713,7 @@ def prompt_with_options(prompt, default=None, options=None):
     msg = "%s [%s]: " % (prompt, default) if default is not None else "%s: " % prompt
     value = None
     while value is None:
-        value = input(msg).strip()
+        value = input(six.ensure_str(msg)).strip()
         if value:
             if options and value not in options:
                 value = None
